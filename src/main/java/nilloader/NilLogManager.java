@@ -1,13 +1,10 @@
 package nilloader;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import nilloader.api.NilLogger;
 import nilloader.impl.log.AdHocLogImpl;
 import nilloader.impl.log.CommonsLogImpl;
-import nilloader.impl.log.JULLogImpl;
 import nilloader.impl.log.Log4j1LogImpl;
 import nilloader.impl.log.Log4j2LogImpl;
 import nilloader.impl.log.NilLogImpl;
@@ -61,34 +58,6 @@ public class NilLogManager {
 			} else if (classDefined("org.slf4j.Logger")) {
 				initLogs.add(() -> NilLoaderLog.log.debug("Discovered SLF4j"));
 				implTmp = new Slf4jLogImpl("NilLoader");
-			} else if (classDefined("cpw.mods.fml.relauncher.FMLRelaunchLog")) {
-				initLogs.add(() -> NilLoaderLog.log.debug("Discovered FML Relauncher, attempting to initialize..."));
-				try {
-					Class<?> log = Class.forName("cpw.mods.fml.relauncher.FMLRelaunchLog", true, ClassLoader.getSystemClassLoader());
-					Method configure = log.getDeclaredMethod("configureLogging");
-					configure.setAccessible(true);
-					try {
-						configure.invoke(null);
-					} catch (InvocationTargetException e) {
-						if (e.getCause() instanceof NullPointerException) {
-							/*
-							 * FML's logger initializer NPEs if the relauncher hasn't started yet, as it
-							 * tries to determine the Minecraft home with a field that's still null.
-							 * It's safe to just swallow the NPE and let Forge fix it later, as the NPE
-							 * causes the "configured" field to never be set to true, resulting in FML
-							 * reinitializing the logger when it tries to use it. configureLogging is
-							 * idempotent, so this doesn't break anything - it simply properly
-							 * configures the file logger, which is what we wanted anyway.
-							 */
-						} else {
-							throw e.getCause();
-						}
-					}
-					initLogs.add(() -> NilLoaderLog.log.debug("Relauncher log initialized successfully"));
-					implTmp = new JULLogImpl("Legacy FML", java.util.logging.Logger.getLogger("ForgeModLoader"), "NilLoader");
-				} catch (Throwable t) {
-					initLogs.add(() -> NilLoaderLog.log.debug("Unexpected exception when trying to initialize FMLRelaunchLog", t));
-				}
 			} else if (classDefined("org.apache.log4j.Logger")) {
 				initLogs.add(() -> NilLoaderLog.log.debug("Discovered Log4j 1 / Reload4j"));
 				implTmp = new Log4j1LogImpl("NilLoader");
