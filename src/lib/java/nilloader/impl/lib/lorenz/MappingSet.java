@@ -36,6 +36,7 @@ import nilloader.impl.lib.lorenz.model.ClassMapping;
 import nilloader.impl.lib.lorenz.model.TopLevelClassMapping;
 import nilloader.impl.lib.lorenz.model.jar.CascadingFieldTypeProvider;
 import nilloader.impl.lib.lorenz.model.jar.FieldTypeProvider;
+import nilloader.impl.lib.lorenz.util.BinaryTool;
 import nilloader.impl.lib.lorenz.util.Reversible;
 
 import java.util.Collection;
@@ -243,7 +244,7 @@ public interface MappingSet extends Reversible<MappingSet, MappingSet> {
      */
     default Type deobfuscate(final Type type) {
         if (type instanceof FieldType) {
-            return this.deobfuscate(this.deobfuscate((FieldType) type));
+            return this.deobfuscate((FieldType) type);
         }
         return type;
     }
@@ -265,9 +266,27 @@ public interface MappingSet extends Reversible<MappingSet, MappingSet> {
         }
         else if (type instanceof ObjectType) {
             final ObjectType obj = (ObjectType) type;
-            return this.getClassMapping(obj.getClassName())
-                    .map(m -> new ObjectType(m.getFullDeobfuscatedName()))
-                    .orElse(obj);
+
+            final String[] name = BinaryTool.from(obj.getClassName());
+
+            ClassMapping<?, ?> currentClass = this.getClassMapping(name[0]).orElse(null);
+            if (currentClass == null) {
+                return type;
+            }
+
+            for (int i = 1; i < name.length; i++) {
+                final ClassMapping<?, ?> thisClass = currentClass.getInnerClassMapping(name[i]).orElse(null);
+                if (thisClass == null) {
+                    final String[] result = new String[name.length - i + 1];
+                    result[0] = currentClass.getFullDeobfuscatedName();
+                    System.arraycopy(name, i, result, 1, name.length - i);
+
+                    return new ObjectType(BinaryTool.to(result));
+                }
+                currentClass = thisClass;
+            }
+
+            return new ObjectType(currentClass.getFullDeobfuscatedName());
         }
         return type;
     }

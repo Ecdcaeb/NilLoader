@@ -81,10 +81,8 @@ public class ClassRemapper extends ClassVisitor {
   /**
    * Constructs a new {@link ClassRemapper}.
    *
-   * @param api the ASM API version supported by this remapper. Must be one of {@link
-   *     nilloader.api.lib.asm.Opcodes#ASM4}, {@link nilloader.api.lib.asm.Opcodes#ASM5}, {@link
-   *     nilloader.api.lib.asm.Opcodes#ASM6}, {@link nilloader.api.lib.asm.Opcodes#ASM7}, {@link
-   *     nilloader.api.lib.asm.Opcodes#ASM8} or {@link nilloader.api.lib.asm.Opcodes#ASM9}.
+   * @param api the ASM API version supported by this remapper. Must be one of the {@code
+   *     ASM}<i>x</i> values in {@link Opcodes}.
    * @param classVisitor the class visitor this remapper must delegate to.
    * @param remapper the remapper to use to remap the types in the visited class.
    */
@@ -261,7 +259,7 @@ public class ClassRemapper extends ClassVisitor {
    */
   @Deprecated
   protected AnnotationVisitor createAnnotationRemapper(final AnnotationVisitor annotationVisitor) {
-    return new AnnotationRemapper(api, /* descriptor = */ null, annotationVisitor, remapper);
+    return new AnnotationRemapper(api, /* descriptor= */ null, annotationVisitor, remapper);
   }
 
   /**

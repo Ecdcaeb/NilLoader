@@ -31,6 +31,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import nilloader.api.lib.asm.ConstantDynamic;
 import nilloader.api.lib.asm.Opcodes;
 import nilloader.api.lib.asm.Type;
 import nilloader.api.lib.asm.tree.AbstractInsnNode;
@@ -61,10 +62,8 @@ public class SourceInterpreter extends Interpreter<SourceValue> implements Opcod
   /**
    * Constructs a new {@link SourceInterpreter}.
    *
-   * @param api the ASM API version supported by this interpreter. Must be one of {@link
-   *     nilloader.api.lib.asm.Opcodes#ASM4}, {@link nilloader.api.lib.asm.Opcodes#ASM5}, {@link
-   *     nilloader.api.lib.asm.Opcodes#ASM6}, {@link nilloader.api.lib.asm.Opcodes#ASM7}, {@link
-   *     nilloader.api.lib.asm.Opcodes#ASM8} or or {@link nilloader.api.lib.asm.Opcodes#ASM9}.
+   * @param api the ASM API version supported by this interpreter. Must be one of the {@code
+   *     ASM}<i>x</i> values in {@link Opcodes}.
    */
   protected SourceInterpreter(final int api) {
     super(api);
@@ -89,8 +88,22 @@ public class SourceInterpreter extends Interpreter<SourceValue> implements Opcod
         size = 2;
         break;
       case LDC:
+        // Values able to be pushed by LDC:
+        //   - int, float, string (object), type (Class, object), type (MethodType, object),
+        //       handle (MethodHandle, object): one word
+        //   - long, double, ConstantDynamic (can produce either single word values, or double word
+        //       values): (up to) two words
         Object value = ((LdcInsnNode) insn).cst;
-        size = value instanceof Long || value instanceof Double ? 2 : 1;
+        if (value instanceof Long || value instanceof Double) {
+          // two words guaranteed
+          size = 2;
+        } else if (value instanceof ConstantDynamic) {
+          // might yield two words
+          size = ((ConstantDynamic) value).getSize();
+        } else {
+          // one word guaranteed
+          size = 1;
+        }
         break;
       case GETSTATIC:
         size = Type.getType(((FieldInsnNode) insn).desc).getSize();

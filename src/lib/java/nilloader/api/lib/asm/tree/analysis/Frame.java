@@ -294,7 +294,7 @@ public class Frame<V extends Value> {
     V value2;
     V value3;
     V value4;
-    int var;
+    int varIndex;
 
     switch (insn.getOpcode()) {
       case Opcodes.NOP:
@@ -332,15 +332,15 @@ public class Frame<V extends Value> {
       case Opcodes.DSTORE:
       case Opcodes.ASTORE:
         value1 = interpreter.copyOperation(insn, pop());
-        var = ((VarInsnNode) insn).var;
-        setLocal(var, value1);
+        varIndex = ((VarInsnNode) insn).var;
+        setLocal(varIndex, value1);
         if (value1.getSize() == 2) {
-          setLocal(var + 1, interpreter.newEmptyValue(var + 1));
+          setLocal(varIndex + 1, interpreter.newEmptyValue(varIndex + 1));
         }
-        if (var > 0) {
-          Value local = getLocal(var - 1);
+        if (varIndex > 0) {
+          Value local = getLocal(varIndex - 1);
           if (local != null && local.getSize() == 2) {
-            setLocal(var - 1, interpreter.newEmptyValue(var - 1));
+            setLocal(varIndex - 1, interpreter.newEmptyValue(varIndex - 1));
           }
         }
         break;
@@ -372,7 +372,7 @@ public class Frame<V extends Value> {
         if (value1.getSize() != 1) {
           throw new AnalyzerException(insn, "Illegal use of DUP");
         }
-        push(value1);
+        push(interpreter.copyOperation(insn, value1));
         push(interpreter.copyOperation(insn, value1));
         break;
       case Opcodes.DUP_X1:
@@ -382,8 +382,8 @@ public class Frame<V extends Value> {
           throw new AnalyzerException(insn, "Illegal use of DUP_X1");
         }
         push(interpreter.copyOperation(insn, value1));
-        push(value2);
-        push(value1);
+        push(interpreter.copyOperation(insn, value2));
+        push(interpreter.copyOperation(insn, value1));
         break;
       case Opcodes.DUP_X2:
         value1 = pop();
@@ -396,8 +396,8 @@ public class Frame<V extends Value> {
         if (value1.getSize() == 1) {
           value2 = pop();
           if (value2.getSize() == 1) {
-            push(value2);
-            push(value1);
+            push(interpreter.copyOperation(insn, value2));
+            push(interpreter.copyOperation(insn, value1));
             push(interpreter.copyOperation(insn, value2));
             push(interpreter.copyOperation(insn, value1));
             break;
@@ -417,9 +417,9 @@ public class Frame<V extends Value> {
             if (value3.getSize() == 1) {
               push(interpreter.copyOperation(insn, value2));
               push(interpreter.copyOperation(insn, value1));
-              push(value3);
-              push(value2);
-              push(value1);
+              push(interpreter.copyOperation(insn, value3));
+              push(interpreter.copyOperation(insn, value2));
+              push(interpreter.copyOperation(insn, value1));
               break;
             }
           }
@@ -427,8 +427,8 @@ public class Frame<V extends Value> {
           value2 = pop();
           if (value2.getSize() == 1) {
             push(interpreter.copyOperation(insn, value1));
-            push(value2);
-            push(value1);
+            push(interpreter.copyOperation(insn, value2));
+            push(interpreter.copyOperation(insn, value1));
             break;
           }
         }
@@ -444,18 +444,18 @@ public class Frame<V extends Value> {
               if (value4.getSize() == 1) {
                 push(interpreter.copyOperation(insn, value2));
                 push(interpreter.copyOperation(insn, value1));
-                push(value4);
-                push(value3);
-                push(value2);
-                push(value1);
+                push(interpreter.copyOperation(insn, value4));
+                push(interpreter.copyOperation(insn, value3));
+                push(interpreter.copyOperation(insn, value2));
+                push(interpreter.copyOperation(insn, value1));
                 break;
               }
             } else {
               push(interpreter.copyOperation(insn, value2));
               push(interpreter.copyOperation(insn, value1));
-              push(value3);
-              push(value2);
-              push(value1);
+              push(interpreter.copyOperation(insn, value3));
+              push(interpreter.copyOperation(insn, value2));
+              push(interpreter.copyOperation(insn, value1));
               break;
             }
           }
@@ -528,8 +528,8 @@ public class Frame<V extends Value> {
         push(interpreter.unaryOperation(insn, pop()));
         break;
       case Opcodes.IINC:
-        var = ((IincInsnNode) insn).var;
-        setLocal(var, interpreter.unaryOperation(insn, getLocal(var)));
+        varIndex = ((IincInsnNode) insn).var;
+        setLocal(varIndex, interpreter.unaryOperation(insn, getLocal(varIndex)));
         break;
       case Opcodes.I2L:
       case Opcodes.I2F:
@@ -655,15 +655,15 @@ public class Frame<V extends Value> {
       V value3 = pop();
       if (value3.getSize() == 1) {
         push(interpreter.copyOperation(insn, value1));
-        push(value3);
-        push(value2);
-        push(value1);
+        push(interpreter.copyOperation(insn, value3));
+        push(interpreter.copyOperation(insn, value2));
+        push(interpreter.copyOperation(insn, value1));
         return true;
       }
     } else {
       push(interpreter.copyOperation(insn, value1));
-      push(value2);
-      push(value1);
+      push(interpreter.copyOperation(insn, value2));
+      push(interpreter.copyOperation(insn, value1));
       return true;
     }
     return false;
@@ -673,7 +673,7 @@ public class Frame<V extends Value> {
       final AbstractInsnNode insn, final String methodDescriptor, final Interpreter<V> interpreter)
       throws AnalyzerException {
     ArrayList<V> valueList = new ArrayList<>();
-    for (int i = Type.getArgumentTypes(methodDescriptor).length; i > 0; --i) {
+    for (int i = Type.getArgumentCount(methodDescriptor); i > 0; --i) {
       valueList.add(0, pop());
     }
     if (insn.getOpcode() != Opcodes.INVOKESTATIC && insn.getOpcode() != Opcodes.INVOKEDYNAMIC) {

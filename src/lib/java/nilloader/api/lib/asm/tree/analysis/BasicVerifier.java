@@ -29,6 +29,7 @@ package nilloader.api.lib.asm.tree.analysis;
 
 import java.util.List;
 
+import nilloader.api.lib.asm.Opcodes;
 import nilloader.api.lib.asm.Type;
 import nilloader.api.lib.asm.tree.AbstractInsnNode;
 import nilloader.api.lib.asm.tree.FieldInsnNode;
@@ -57,10 +58,8 @@ public class BasicVerifier extends BasicInterpreter {
   /**
    * Constructs a new {@link BasicVerifier}.
    *
-   * @param api the ASM API version supported by this interpreter. Must be one of {@link
-   *     nilloader.api.lib.asm.Opcodes#ASM4}, {@link nilloader.api.lib.asm.Opcodes#ASM5}, {@link
-   *     nilloader.api.lib.asm.Opcodes#ASM6}, {@link nilloader.api.lib.asm.Opcodes#ASM7}, {@link
-   *     nilloader.api.lib.asm.Opcodes#ASM8} or or {@link nilloader.api.lib.asm.Opcodes#ASM9}.
+   * @param api the ASM API version supported by this interpreter. Must be one of the {@code
+   *     ASM}<i>x</i> values in {@link Opcodes}.
    */
   protected BasicVerifier(final int api) {
     super(api);

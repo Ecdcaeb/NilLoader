@@ -25,13 +25,13 @@
 
 package nilloader.impl.lib.lorenz.model;
 
-import java.util.Collection;
-import java.util.Optional;
-
 import nilloader.impl.lib.bombe.type.MethodDescriptor;
 import nilloader.impl.lib.bombe.type.signature.MethodSignature;
 import nilloader.impl.lib.lorenz.MappingSet;
 import nilloader.impl.lib.lorenz.merge.MappingSetMerger;
+
+import java.util.Collection;
+import java.util.Optional;
 
 /**
  * Represents a de-obfuscation mapping for methods.

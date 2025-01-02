@@ -59,10 +59,8 @@ public class MethodRemapper extends MethodVisitor {
   /**
    * Constructs a new {@link MethodRemapper}.
    *
-   * @param api the ASM API version supported by this remapper. Must be one of {@link
-   *     nilloader.api.lib.asm.Opcodes#ASM4}, {@link nilloader.api.lib.asm.Opcodes#ASM5}, {@link
-   *     nilloader.api.lib.asm.Opcodes#ASM6}, {@link nilloader.api.lib.asm.Opcodes#ASM7}, {@link
-   *     nilloader.api.lib.asm.Opcodes#ASM8} or {@link nilloader.api.lib.asm.Opcodes#ASM9}.
+   * @param api the ASM API version supported by this remapper. Must be one of the {@code
+   *     ASM}<i>x</i> values in {@link Opcodes}.
    * @param methodVisitor the method visitor this remapper must delegate to.
    * @param remapper the remapper to use to remap the types in the visited method.
    */
@@ -77,7 +75,7 @@ public class MethodRemapper extends MethodVisitor {
     AnnotationVisitor annotationVisitor = super.visitAnnotationDefault();
     return annotationVisitor == null
         ? annotationVisitor
-        : createAnnotationRemapper(/* descriptor = */ null, annotationVisitor);
+        : createAnnotationRemapper(/* descriptor= */ null, annotationVisitor);
   }
 
   @Override
@@ -273,7 +271,7 @@ public class MethodRemapper extends MethodVisitor {
    */
   @Deprecated
   protected AnnotationVisitor createAnnotationRemapper(final AnnotationVisitor annotationVisitor) {
-    return new AnnotationRemapper(api, /* descriptor = */ null, annotationVisitor, remapper);
+    return new AnnotationRemapper(api, /* descriptor= */ null, annotationVisitor, remapper);
   }
 
   /**
